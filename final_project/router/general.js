@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -30,28 +31,55 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  //Write your code here
-  //return res.status(300).json({message: "Yet to be implemented"});
-
   res.send(JSON.stringify({books}, null, 5));
 
 });
 
-// Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here
-  //return res.status(300).json({message: "Yet to be implemented"});
+public_users.get('/books', async function (req, res) {
+  try {
+      res.json({ books });
+  } catch (error) {
+      res.status(500).json({ 
+          error: 'Failed to fetch books',
+          details: error.message 
+      });
+  }
+});
 
+async function fetchBooks(){
+  try {
+    const response = await axios.get('http://localhost:5000/books');
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    
+  }
+}
+
+//fetchBooks();
+
+// Get book details based on ISBN
+public_users.get('/isbn/:isbn', async function (req, res) {
+  
   const isbn = req.params.isbn;
   res.send(JSON.stringify(books[isbn], null, 5) );
 
  });
+
+async function fetchBookByISBN(isbn){
+  try {
+    const response = await axios.get('http://localhost:5000/isbn/'+isbn);
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    
+  }
+}
+//fetchBookByISBN(5);
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  //return res.status(300).json({message: "Yet to be implemented"});
-
+public_users.get('/author/:author', async function (req, res) {
+  
   const author = req.params.author;
   // 1. Obtain all the keys for the 'books' object
   const bookKeys = Object.keys(books);
@@ -68,8 +96,19 @@ public_users.get('/author/:author',function (req, res) {
 
 });
 
+async function fetchBooksByAuthor(author){
+  try {
+    const response = await axios.get('http://localhost:5000/author/'+author);
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    
+  }
+}
+//fetchBooksByAuthor("Unknown");
+
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
   //Write your code here
   //return res.status(300).json({message: "Yet to be implemented"});
 
@@ -89,6 +128,18 @@ public_users.get('/title/:title',function (req, res) {
 
 
 });
+
+async function fetchBooksByTitle(title){
+  try {
+    const response = await axios.get('http://localhost:5000/title/'+title);
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    
+  }
+}
+fetchBooksByTitle("The Epic Of Gilgamesh");
+
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
